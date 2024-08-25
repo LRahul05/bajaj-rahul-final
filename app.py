@@ -1,32 +1,50 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
+
+# Global variables to store processed data
+global_data = {
+    'numbers': [],
+    'alphabets': [],
+    'email': '',
+    'name': '',
+    'register_number': ''
+}
+
+@app.route('/bfhl', methods=['GET'])
+def get_message():
+    # Return the processed data for GET requests
+    return jsonify(global_data)
 
 @app.route('/bfhl', methods=['POST'])
 def process_data():
-    try:
-        data = request.json.get('data', [])
-        numbers = [x for x in data if x.isdigit()]  
-        alphabets = [x for x in data if x.isalpha()]  
-        lowercase_alphabets = [x for x in alphabets if x.islower()]  
-        highest_lowercase_alphabet = max(lowercase_alphabets) if lowercase_alphabets else ""
+    global global_data
+    
+    # Get data from the request
+    data = request.json
+    text_data = data.get('data', '')
+    
 
-        response = {
-            "is_success": True,
-            "user_id": "rahul_l_0508",  
-            "email": "rahul.l2021@vitstudent.ac.in",
-            "roll_number": "21BIT0343",
-            "numbers": numbers,
-            "alphabets": alphabets,
-            "highest_lowercase_alphabet": [highest_lowercase_alphabet] if highest_lowercase_alphabet else []
-        }
-        return jsonify(response)
-    except Exception as e:
-        return jsonify({"is_success": False, "error": str(e)})
+    # Process the text data
+    items = text_data.split(',')
+    numbers = [item for item in items if item.isdigit()]
+    alphabets = [item for item in items if item.isalpha()]
 
-@app.route('/bfhl', methods=['GET'])
-def get_operation_code():
-    return jsonify({"operation_code": 1})
+    # Sort the lists
+    numbers.sort(key=int)
+    alphabets.sort()
 
-if __name__ == "__main__":
+    global_data = {
+        'numbers': numbers,
+        'alphabets': alphabets,
+        'email': 'rahul.l2021@vitstudent.ac.in',
+        'name': 'Rahul L',
+        'register_number': '21BIT0343'
+    }
+
+    return jsonify(global_data)
+
+if __name__ == '__main__':
     app.run(debug=True)
